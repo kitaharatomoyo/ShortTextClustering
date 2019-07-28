@@ -14,7 +14,6 @@ def load_word2vec(file_path):
             dic[word] = vec
             if i % 50000 == 0:
                 print('(%d %% %s) words\' vector loaded;' % (i, n))
-#                break ## remember to remove this line  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     print('load_dictionary finished.')
     return dic
 

@@ -80,12 +80,13 @@ def getFeature(dic, Corpus):
 
     represented = []
     length = len(Corpus)
-    for i in range(0, length, 10000):
-        input = getMat(dic, Corpus[i:min(length, i + 10000)])
+    for i in range(0, length, 500):
+        input = getMat(dic, Corpus[i:min(length, i + 500)])
         input = np.array(input)
-        outputs, h = net(torch.Tensor(inputs.reshape(-1, 1, 20, 300)))
+        input = input.reshape(-1, 1, 20, 300)
+        outputs, h = net(torch.Tensor(input))
         represented += h.data.numpy().tolist()
-        print('(%d %% %d) have been Embedding.' % (i, 362888))
+        print('(%d %% %d) have been Embedding.' % (i, length))
 
     print('all sentences finished Embedding')
 
@@ -119,7 +120,7 @@ if __name__ == '__main__':
     #         print('(%d %% %d) sentences has been cutted' % (i, 382688))
     # uppickle(Corpus, './data/CuttedCorpus')
 
-    Corpus = unpickle('./data/CuttedCorpus')
+    # Corpus = unpickle('./data/CuttedCorpus')
 
     # random.seed(128)
     # random.shuffle(Corpus)
@@ -130,12 +131,45 @@ if __name__ == '__main__':
     # uppickle(featureRepresent,'./data/featureRepresent')
 
     Corpus = unpickle('./data/Corpus')
-    featureRepresent = unpickle('./data/featureRepresent')
+    # featureRepresent = unpickle('./data/featureRepresent')
 
-    Sets, belongs = kmeans.kmeans([np.array(i) for i in featureRepresent], 15)
+    # Sets, belongs = kmeans.kmeans([np.array(i) for i in featureRepresent], 15)
+
+    # uppickle(belongs,'./data/belongs')
+
+    belongs = unpickle('./data/belongs')
+
+    random.seed(12)
+    for i in range(len(belongs)):
+#        belongs[i] = random.randint(0, 15 - 1)
+        belongs[i] = i % 15
 
     sum = [0] * 15
     for i in belongs:
         sum[belongs[i]] += 1
-    print(sum)
+    print('belongs are ', sum)
+
+    label = [0] * 20
+    for i in Corpus:
+        label[i[1] - 101] += 1
+    print('labels are ', label)
+
+    random.seed()
+    sum_score = 0
+    total_score = 0
+
+
+    maxrandlen = len(belongs)
+    for x in range(0, maxrandlen):
+        for y in range(0, maxrandlen):
+            total_score += 1 if Corpus[x][1] == Corpus[y][1] else 1
+            if Corpus[x][1] != Corpus[y][1]:
+                sum_score += 1 if belongs[x] != belongs[y] else 0
+            else:
+                sum_score += 1 if belongs[x] == belongs[y] else 0
+        if x % 1000 == 0:
+            print('(%d %% %d) has been calced.' % (x, maxrandlen))
+
+    print('final acc = %f %%' % (100 * sum_score / total_score)) 
+
     

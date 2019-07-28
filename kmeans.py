@@ -24,12 +24,16 @@ def kmeans(lt, k_Num, max_Iter=500): # remember to change the maxIter times as y
     for i in range(k_Num):
         C.append(lt[lst[i]])
 
+    print('Iter start:')
+    havedIter = 0
     # start the iteration
     while max_Iter > 0:
+        havedIter += 1
         old_C = C
         Sets = [{} for i in range(k_Num)]
         belongs = [0 for i in range(len(lt))]
 
+        print('  Iter %d, determain the belongs ' % (havedIter))
         # get each one's belonging
         for i in range(len(lt)):
             belong = 0
@@ -41,7 +45,10 @@ def kmeans(lt, k_Num, max_Iter=500): # remember to change the maxIter times as y
                     distance = cnt_distance
             Sets[belong][i] = 1
             belongs[i] = belong
+            if i % 10000 == 0:
+                print('    Iter %d: %d have determained' % (havedIter, i))
 
+        print('  Iter %d, maintain the set' % (havedIter))
         # get the new core of each set
         for i in range(k_Num):
             core = C[i] - C[i]
@@ -50,7 +57,10 @@ def kmeans(lt, k_Num, max_Iter=500): # remember to change the maxIter times as y
             if len(Sets[i]) > 0:
                 core = core / len(Sets[i])
             C[i] = core
-        
+
+        # show the process to user
+        print('%d Iters have been done, the rest is no more than %d ' % (havedIter, max_Iter))
+
         # if the set C does't maintain, break
         if old_C == C:
             break
