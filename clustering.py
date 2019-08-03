@@ -2,14 +2,14 @@ import numpy as np
 import math
 import jieba
 import random
+import time
+import torch
 
 import data_util
 import simhash
 import laplacian_eigenmap
 import kmeans
 import cnn_model
-
-import torch
 
 def getDiff(a, b):
     diff = 0
@@ -104,6 +104,9 @@ def uppickle(dict,file):
         pickle.dump(dict, fo)
 
 if __name__ == '__main__':
+
+    start_time = time.clock()
+
     # dic = data_util.load_word2vec('./data/sgns.sogounews.bigram-char')
     # corpus = data_util.load_corpus('./data/toutiao_cat_data.txt')
     # 
@@ -131,45 +134,33 @@ if __name__ == '__main__':
     # uppickle(featureRepresent,'./data/featureRepresent')
 
     Corpus = unpickle('./data/Corpus')
-    # featureRepresent = unpickle('./data/featureRepresent')
+    featureRepresent = unpickle('./data/featureRepresent')
+    
+    print('data has been loaded.\n kmeans start')
+    Sets, belongs = kmeans.kmeans([np.array(i) for i in featureRepresent], 15)
 
-    # Sets, belongs = kmeans.kmeans([np.array(i) for i in featureRepresent], 15)
-
-    # uppickle(belongs,'./data/belongs')
+    uppickle(belongs,'./data/belongs')
 
     belongs = unpickle('./data/belongs')
-
-    random.seed(12)
-    for i in range(len(belongs)):
-#        belongs[i] = random.randint(0, 15 - 1)
-        belongs[i] = i % 15
-
-    sum = [0] * 15
-    for i in belongs:
-        sum[belongs[i]] += 1
-    print('belongs are ', sum)
-
-    label = [0] * 20
-    for i in Corpus:
-        label[i[1] - 101] += 1
-    print('labels are ', label)
 
     random.seed()
     sum_score = 0
     total_score = 0
 
-
     maxrandlen = len(belongs)
-    for x in range(0, maxrandlen):
-        for y in range(0, maxrandlen):
-            total_score += 1 if Corpus[x][1] == Corpus[y][1] else 1
-            if Corpus[x][1] != Corpus[y][1]:
-                sum_score += 1 if belongs[x] != belongs[y] else 0
-            else:
-                sum_score += 1 if belongs[x] == belongs[y] else 0
+    for i in range(10000000):
+        x = random.randint(0, maxrandlen - 1)
+        y = random.randint(0, maxrandlen - 1)
+        total_score += 1 if Corpus[x][1] == Corpus[y][1] else 1
+        if Corpus[x][1] != Corpus[y][1]:
+            sum_score += 1 if belongs[x] != belongs[y] else 0
+        else:
+            sum_score += 1 if belongs[x] == belongs[y] else 0
         if x % 1000 == 0:
-            print('(%d %% %d) has been calced.' % (x, maxrandlen))
+            print('(%d %% %d) has been calced.' % (x, 10000000))
 
     print('final acc = %f %%' % (100 * sum_score / total_score)) 
 
     
+    elapsed = (time.clock() - start_time)
+    print("Time used:",elapsed)
