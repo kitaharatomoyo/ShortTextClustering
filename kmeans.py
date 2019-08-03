@@ -11,11 +11,11 @@ def equal(a, b):
     if len(a) != len(b):
         return False
     for i in range(len(a)):
-        if (a[i] != b[i]).all():
+        if (a[i] != b[i]).any():
             return False
     return True
 
-def kmeans(lt, k_Num, max_Iter=50): # remember to change the maxIter times as you want !!!!
+def kmeans(lt, k_Num, max_Iter=200): # remember to change the maxIter times as you want !!!!
     if k_Num > len(lt):
         print('the number of the set is less than the number you want to cluster which named as k.')
         return lt
@@ -47,7 +47,7 @@ def kmeans(lt, k_Num, max_Iter=50): # remember to change the maxIter times as yo
                     distance = cnt_distance
             Sets[belong][i] = 1
             belongs[i] = belong
-            if i % 50000 == 0:
+            if i % 10000 == 0:
                 print('    max_Iter = %d , (%d %% %d) have done.' % (Max_Iter - max_Iter, i, len(lt)))
         print('  we have got each one\'s belongs')
 
@@ -60,7 +60,7 @@ def kmeans(lt, k_Num, max_Iter=50): # remember to change the maxIter times as yo
                 core = core / len(Sets[i])
             C[i] = core
         print('  we have got new core of each set')
-        
+
         # if the set C does't maintain, break
         if equal(old_C, C):
             break

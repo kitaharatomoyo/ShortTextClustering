@@ -23,10 +23,9 @@ def load_corpus(file_path):
         i = 0
         for line in f:
             i += 1
-            ls = line.split('_!_')
-            sentence = ls[-2]
-            tagNumber = int(ls[-4])
-            tagName = ls[-3]
+            sentence = line[:-1]
+            tagNumber = 0
+            tagName = 'byouki'
             corpus.append([sentence, tagNumber, tagName])
             if i % 50000 == 0:
                 print('(%d %% %s) sentences loaded;' % (i, 382688))

@@ -1,8 +1,12 @@
 import math
+import random
 
 def ownhash(word, bits):
     if word == '':
-        return [0] * bits
+        ret = [0] * bits
+        for i in range(1, bits):
+            ret[i] = random.randint(-1, 1)
+        return ret
     else:
         x = ord(word[0]) << 7
         m = 1000000007
@@ -20,6 +24,7 @@ def simhash(dataSet, bits=32):
     idfDict = {}
     hashedData = []
 
+    random.seed()
     n = len(dataSet)
     for sentence in dataSet:
         sentSet = set(sentence)
@@ -37,11 +42,7 @@ def simhash(dataSet, bits=32):
         hashedSentence = [0] * bits
         for word in sentence:
             hashedSentence = [(hashedSentence[j] + hashDict[word][j] * idfDict[word]) for j in range(bits)]
-        hashedSentence = [1 if j > 0 else 0 for j in hashedSentence]
-        # hashedNumber = 0
-        # for j, bit in enumerate(hashedSentence):
-        #     hashedNumber += (2 ** j) * bit
-        # hashedData.append(hashedNumber)
+        hashedSentence = [1 if j > 0 else -1 for j in hashedSentence]
         hashedData.append(hashedSentence)
     return hashedData
 

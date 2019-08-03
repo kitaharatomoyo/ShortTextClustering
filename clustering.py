@@ -33,7 +33,7 @@ def getMat(dic, corpus):
     return ret
 
 def getFeature(dic, Corpus):
-    corpus = Corpus[:1000] # remember to increse highly.
+    corpus = Corpus[:5000] # remember to increse highly.
     sentences = [j[0] for j in corpus]
     hashedSentences = simhash.simhash(sentences, 32)
     B = hashedSentences
@@ -53,11 +53,13 @@ def getFeature(dic, Corpus):
     criterion = cnn_model.nn.MSELoss()
     optimizer = cnn_model.optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
-    for epoch in range(20):  # loop over the dataset multiple times
+    print('Start Traning Cnn')
 
-        running_loss = 0.0
+    i = 0
+    running_loss = 0.0
+    for epoch in range(50):  # loop over the dataset multiple times
+
         generator = cnn_model.batch_generator(data, 100)
-        i = 0
         for inputs, labels in generator:
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -71,7 +73,7 @@ def getFeature(dic, Corpus):
             # print statistics
             running_loss += loss.item()
             i += 1
-            if i % 2000 == 1999:    # print every 2000 mini-batches
+            if i % 20 == 19:    # print every 100 mini-batches
                 print('[%d, %5d] loss: %.3f' %
                     (epoch + 1, i + 1, running_loss / 2000))
                 running_loss = 0.0
@@ -103,64 +105,61 @@ def uppickle(dict,file):
     with open(file, 'wb') as fo:
         pickle.dump(dict, fo)
 
+def consist(lt):
+    ret = ''
+    for i in lt:
+        ret += i
+    return ret
+
 if __name__ == '__main__':
 
-    start_time = time.clock()
+    start_time = time.process_time()
 
-    # dic = data_util.load_word2vec('./data/sgns.sogounews.bigram-char')
-    # corpus = data_util.load_corpus('./data/toutiao_cat_data.txt')
-    # 
-    ## cut and supply the corpus
-    # Corpus = corpus
-    # for i, line in enumerate(Corpus):
-    #     Corpus[i][0] = jieba.lcut(Corpus[i][0])
-    #     length = len(Corpus[i][0])
-    #     if length > 20:
-    #         Corpus[i][0] = Corpus[i][0][:20]
-    #     if length < 20:
-    #         Corpus[i][0] += (20 - length) * ['']
-    #     if i % 10000 == 0:
-    #         print('(%d %% %d) sentences has been cutted' % (i, 382688))
-    # uppickle(Corpus, './data/CuttedCorpus')
+    dic = data_util.load_word2vec('./data/sgns.sogounews.bigram-char')
+    corpus = data_util.load_corpus('./data/ganmao.txt')
+    
+    # cut and supply the corpus
+    Corpus = corpus
+    CorpusLength = len(Corpus)
+    for i, line in enumerate(Corpus):
+        Corpus[i][0] = jieba.lcut(Corpus[i][0])
+        length = len(Corpus[i][0])
+        if length > 20:
+            Corpus[i][0] = Corpus[i][0][:20]
+        if length < 20:
+            Corpus[i][0] += (20 - length) * ['']
+        if i % 10000 == 0:
+            print('(%d %% %d) sentences has been cutted' % (i, CorpusLength))
+    uppickle(Corpus, './data/CuttedCorpus')
 
-    # Corpus = unpickle('./data/CuttedCorpus')
+    Corpus = unpickle('./data/CuttedCorpus')
 
-    # random.seed(128)
-    # random.shuffle(Corpus)
+    random.seed()
+    random.shuffle(Corpus)
 
-    # featureRepresent = getFeature(dic, Corpus)
+    featureRepresent = getFeature(dic, Corpus)
 
-    # uppickle(Corpus,'./data/Corpus')
-    # uppickle(featureRepresent,'./data/featureRepresent')
+    uppickle(Corpus,'./data/Corpus')
+    uppickle(featureRepresent,'./data/featureRepresent')
 
     Corpus = unpickle('./data/Corpus')
     featureRepresent = unpickle('./data/featureRepresent')
-    
+
     print('data has been loaded.\n kmeans start')
-    Sets, belongs = kmeans.kmeans([np.array(i) for i in featureRepresent], 15)
+    Sets, belongs = kmeans.kmeans([np.array(i) for i in featureRepresent], 300)
 
     uppickle(belongs,'./data/belongs')
 
     belongs = unpickle('./data/belongs')
 
-    random.seed()
-    sum_score = 0
-    total_score = 0
+    label_sentence = [[] for i in range(300)]
 
-    maxrandlen = len(belongs)
-    for i in range(10000000):
-        x = random.randint(0, maxrandlen - 1)
-        y = random.randint(0, maxrandlen - 1)
-        total_score += 1 if Corpus[x][1] == Corpus[y][1] else 1
-        if Corpus[x][1] != Corpus[y][1]:
-            sum_score += 1 if belongs[x] != belongs[y] else 0
-        else:
-            sum_score += 1 if belongs[x] == belongs[y] else 0
-        if x % 1000 == 0:
-            print('(%d %% %d) has been calced.' % (x, 10000000))
+    for i, belong in enumerate(belongs):
+        label_sentence[belong].append(consist(Corpus[i][0]))
 
-    print('final acc = %f %%' % (100 * sum_score / total_score)) 
-
-    
-    elapsed = (time.clock() - start_time)
-    print("Time used:",elapsed)
+    with open('ganmao_clustering.txt', 'w') as w:
+        for i in range(300):
+            w.write(str(i) + '\n')
+            w.write(str(len(label_sentence[i])) + '\n')
+            for sentence in label_sentence[i]:
+                w.write(sentence + '\n')
