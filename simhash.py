@@ -34,7 +34,8 @@ def simhash(dataSet, bits=32):
                 dfDict[word] = 1
             else:
                 dfDict[word] += 1
-    
+    print('---------------------', max(dfDict), n)
+    print(dfDict)
     for key in dfDict.keys():
         idfDict[key] = math.log(n / dfDict[key])
 

@@ -33,10 +33,27 @@ def getMat(dic, corpus):
     return ret
 
 def getFeature(dic, Corpus):
-    corpus = Corpus[:5000] # remember to increse highly.
+    # corpus = Corpus[:5000] # remember to increse highly.
+    corpus = Corpus # remember to increse highly.
     sentences = [j[0] for j in corpus]
     hashedSentences = simhash.simhash(sentences, 32)
     B = hashedSentences
+    
+    length = len(dic[','])
+    print(length)
+
+    ret = []
+    for sentence in sentences:
+        sentvec = []
+        for word in sentence:
+            sentvec += dic.get(word, [0 for i in range(length)])
+        ret.append(sentvec)
+    return ret
+
+    return B
+    # print(type(B))
+    # print(len(Corpus), len(B), type(B[0]))
+    # exit(0)
 
     # # you can try simhash directly, maybe it performs better.
     # hashedSentences = simhash.simhash(sentences, 128)
@@ -92,6 +109,7 @@ def getFeature(dic, Corpus):
 
     print('all sentences finished Embedding')
 
+    print('=========================', represented[0], represented[1])
     return represented
 
 def unpickle(file):
@@ -130,8 +148,9 @@ if __name__ == '__main__':
             Corpus[i][0] += (20 - length) * ['']
         if i % 10000 == 0:
             print('(%d %% %d) sentences has been cutted' % (i, CorpusLength))
-    print(Corpus[0][0], Corpus[1][0])
-    exit(0)
+    # for i in range(10):
+    #     print(Corpus[i][0])
+    # exit(0)
     uppickle(Corpus, './data/CuttedCorpus')
 
     Corpus = unpickle('./data/CuttedCorpus')
@@ -148,7 +167,7 @@ if __name__ == '__main__':
     featureRepresent = unpickle('./data/featureRepresent')
 
     print('data has been loaded.\n kmeans start')
-    Sets, belongs = kmeans.kmeans([np.array(i) for i in featureRepresent], 400)
+    Sets, belongs = kmeans.kmeans([np.array(i) for i in featureRepresent], 300)
 
     uppickle(belongs,'./data/belongs')
 
