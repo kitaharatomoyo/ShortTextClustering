@@ -116,7 +116,7 @@ if __name__ == '__main__':
     start_time = time.process_time()
 
     dic = data_util.load_word2vec('./data/sgns.sogounews.bigram-char')
-    corpus = data_util.load_corpus('./data/ganmao.txt')
+    corpus = data_util.load_corpus('./data/questions.csv')
     
     # cut and supply the corpus
     Corpus = corpus
@@ -130,6 +130,8 @@ if __name__ == '__main__':
             Corpus[i][0] += (20 - length) * ['']
         if i % 10000 == 0:
             print('(%d %% %d) sentences has been cutted' % (i, CorpusLength))
+    print(Corpus[0][0], Corpus[1][0])
+    exit(0)
     uppickle(Corpus, './data/CuttedCorpus')
 
     Corpus = unpickle('./data/CuttedCorpus')
@@ -146,7 +148,7 @@ if __name__ == '__main__':
     featureRepresent = unpickle('./data/featureRepresent')
 
     print('data has been loaded.\n kmeans start')
-    Sets, belongs = kmeans.kmeans([np.array(i) for i in featureRepresent], 300)
+    Sets, belongs = kmeans.kmeans([np.array(i) for i in featureRepresent], 400)
 
     uppickle(belongs,'./data/belongs')
 
@@ -157,7 +159,7 @@ if __name__ == '__main__':
     for i, belong in enumerate(belongs):
         label_sentence[belong].append(consist(Corpus[i][0]))
 
-    with open('ganmao_clustering.txt', 'w') as w:
+    with open('questions_clustering.txt', 'w') as w:
         for i in range(300):
             w.write(str(i) + '\n')
             w.write(str(len(label_sentence[i])) + '\n')
